@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#3a7d44">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="農業日報">
+  <title>農業日報</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    /* ===================== CSS Variables ===================== */
+    :root {
+      --primary:       #3a7d44;
+      --primary-light: #4caf50;
+      --primary-dark:  #2d6035;
+      --primary-bg:    #e8f5e9;
+      --accent:        #ff8f00;
+      --accent-bg:     #fff3e0;
+      --danger:        #e53935;
+      --danger-bg:     #ffebee;
+      --bg:            #f1f8f1;
+      --card:          #ffffff;
+      --text:          #1b2b1b;
+      --muted:         #607460;
+      --border:        #d4e8d4;
+      --nav-h:         62px;
+      --header-h:      56px;
+    }
+
+    /* ===================== Reset ===================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI',
+                   'Meiryo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 600px;
+      margin: 0 auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===================== App Header ===================== */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 600px;
+      height: var(--header-h);
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.22);
+    }
+
+    .app-header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+      letter-spacing: .3px;
+    }
+
+    .header-btn {
+      background: rgba(255,255,255,.18);
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ===================== Main Content ===================== */
+    .content {
+      margin-top: var(--header-h);
+      margin-bottom: var(--nav-h);
+      min-height: calc(100vh - var(--header-h) - var(--nav-h));
+    }
+
+    /* ===================== Bottom Nav ===================== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 600px;
+      height: var(--nav-h);
+      background: #fff;
+      display: flex;
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      border: none;
+      background: none;
+      font-family: inherit;
+      transition: color .2s;
+      padding: 4px 2px 8px;
+    }
+
+    .nav-item .nav-icon { font-size: 22px; line-height: 1; }
+    .nav-item.active { color: var(--primary); }
+
+    /* ===================== Sections ===================== */
+    .section { display: none; padding: 14px 14px 8px; }
+    .section.active { display: block; }
+
+    /* ===================== Cards ===================== */
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 5px rgba(0,0,0,.07);
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 14px;
+    }
+
+    /* ===================== Form ===================== */
+    .form-group { margin-bottom: 12px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+      font-family: inherit;
+      -webkit-appearance: none;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(58,125,68,.12);
+    }
+
+    select.form-control { cursor: pointer; }
+    textarea.form-control { resize: vertical; min-height: 76px; line-height: 1.5; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ===================== Buttons ===================== */
+    .btn {
+      padding: 11px 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .15s, transform .1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:active { opacity: .82; transform: scale(.98); }
+
+    .btn-primary  { background: var(--primary); color: #fff; width: 100%; }
+    .btn-secondary { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+    .btn-danger   { background: var(--danger-bg); color: var(--danger); border: 1.5px solid #ffcdd2; }
+
+    .btn-sm { padding: 7px 13px; font-size: 13px; border-radius: 8px; }
+
+    .btn-add {
+      width: 100%;
+      background: var(--primary-bg);
+      color: var(--primary);
+      border: 1.5px dashed var(--primary);
+      border-radius: 10px;
+      padding: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* ===================== Dynamic List Items ===================== */
+    .list-item {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      position: relative;
+      background: #fafffe;
+    }
+
+    .list-item .remove-btn {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: none;
+      border-radius: 50%;
+      width: 24px; height: 24px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+
+    /* ===================== Calendar ===================== */
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .cal-nav h2 {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .cal-arrow {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      width: 38px; height: 38px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .cal-grid {
+      background: var(--card);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 5px rgba(0,0,0,.07);
+    }
+
+    .cal-head {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background: var(--primary);
+    }
+
+    .cal-head span {
+      text-align: center;
+      padding: 7px 0;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .cal-head span:first-child { color: #ffcdd2; }
+    .cal-head span:last-child  { color: #b3e5fc; }
+
+    .cal-body {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .cal-day {
+      min-height: 48px;
+      padding: 3px;
+      border: .5px solid #eaf2ea;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background .15s;
+    }
+
+    .cal-day:active { background: var(--primary-bg); }
+
+    .day-num {
+      font-size: 13px;
+      font-weight: 600;
+      width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+    }
+
+    .cal-day.today .day-num {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .cal-day.sunday  .day-num { color: #e53935; }
+    .cal-day.saturday .day-num { color: #1565c0; }
+    .cal-day.other-month { opacity: .28; pointer-events: none; }
+
+    .day-dots {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .day-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .day-dot.has-pest { background: var(--accent); }
+
+    /* ===================== Report Items ===================== */
+    .report-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 13px 14px;
+      margin-bottom: 9px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      cursor: pointer;
+      border-left: 4px solid var(--primary);
+      transition: box-shadow .15s;
+    }
+
+    .report-item:active { box-shadow: 0 2px 10px rgba(0,0,0,.14); }
+
+    .report-date  { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .report-field { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 3px; }
+    .report-work  { font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ===================== Badge ===================== */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      gap: 3px;
+    }
+
+    .badge-green  { background: var(--primary-bg); color: var(--primary-dark); }
+    .badge-orange { background: var(--accent-bg);  color: #bf360c; }
+    .badge-blue   { background: #e3f2fd; color: #0d47a1; }
+
+    /* ===================== Photo Grid ===================== */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .photo-thumb {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg);
+    }
+
+    .photo-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-rm {
+      position: absolute;
+      top: 3px; right: 3px;
+      background: rgba(0,0,0,.55);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ===================== Filter Chips ===================== */
+    .filter-bar {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 12px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      font-family: inherit;
+      transition: all .15s;
+    }
+
+    .chip.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* ===================== Table ===================== */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .data-table th {
+      background: var(--primary);
+      color: #fff;
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .data-table th:first-child { border-radius: 0; }
+
+    .data-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f9fdf9; }
+
+    /* ===================== Field List ===================== */
+    .field-item {
+      display: flex;
+      align-items: center;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 13px 14px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      gap: 10px;
+    }
+
+    .field-icon {
+      font-size: 28px;
+      width: 44px; height: 44px;
+      background: var(--primary-bg);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .field-info { flex: 1; min-width: 0; }
+    .field-name { font-size: 15px; font-weight: 700; }
+    .field-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .field-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ===================== Export Cards ===================== */
+    .export-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,.07);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .export-icon { font-size: 34px; }
+
+    .export-info { flex: 1; }
+    .export-title { font-size: 15px; font-weight: 700; }
+    .export-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ===================== Modal ===================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.48);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--card);
+      border-radius: 22px 22px 0 0;
+      padding: 20px 16px 24px;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-title { font-size: 17px; font-weight: 800; }
+
+    .modal-close {
+      background: var(--bg);
+      border: none;
+      border-radius: 50%;
+      width: 30px; height: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+    }
+
+    /* ===================== Detail View ===================== */
+    .detail-block { margin-bottom: 14px; }
+
+    .detail-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 5px;
+    }
+
+    .detail-value { font-size: 14px; line-height: 1.6; }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    /* ===================== Toast ===================== */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--nav-h) + 14px);
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: #222;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 22px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 300;
+      transition: opacity .3s, transform .3s;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ===================== Empty State ===================== */
+    .empty {
+      text-align: center;
+      padding: 44px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 46px; margin-bottom: 10px; }
+    .empty p    { font-size: 14px; line-height: 1.6; }
+
+    /* ===================== Section title ===================== */
+    .sec-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    /* ===================== Date range ===================== */
+    .date-range-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .date-range-bar .form-control { flex: 1; padding: 8px 10px; font-size: 13px; }
+    .date-range-bar span { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+    /* ===================== Scrollbar ===================== */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+    /* ===================== Overflow table wrapper ===================== */
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 1px 5px rgba(0,0,0,.07);
+    }
+
+    /* ===================== Notice box ===================== */
+    .notice {
+      background: var(--accent-bg);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #6d3a00;
+      line-height: 1.7;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="app-header">
+  <h1>🌱 農業日報</h1>
+</header>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<main class="content">
+
+  <!-- ======== TAB: 記録 ======== -->
+  <section id="sec-record" class="section active">
+
+    <div class="card">
+      <div class="card-title">基本情報</div>
+      <div class="form-group">
+        <label class="form-label">日付</label>
+        <input type="date" id="r-date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">圃場</label>
+        <select id="r-field" class="form-control">
+          <option value="">-- 圃場を選択 --</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">天気</label>
+          <select id="r-weather" class="form-control">
+            <option value="晴れ">☀️ 晴れ</option>
+            <option value="曇り">☁️ 曇り</option>
+            <option value="小雨">🌦️ 小雨</option>
+            <option value="雨">🌧️ 雨</option>
+            <option value="雪">❄️ 雪</option>
+            <option value="強風">💨 強風</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">気温 (℃)</label>
+          <input type="number" id="r-temp" class="form-control" placeholder="20" step="0.5">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">作業内容</div>
+      <div class="form-group">
+        <label class="form-label">作業内容</label>
+        <textarea id="r-work" class="form-control" rows="3" placeholder="行った作業を詳しく記入…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">作業時間 (h)</label>
+          <input type="number" id="r-hours" class="form-control" placeholder="8" step="0.5" min="0" max="24">
+        </div>
+        <div class="form-group">
+          <label class="form-label">作業者</label>
+          <input type="text" id="r-worker" class="form-control" placeholder="氏名">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">備考</label>
+        <textarea id="r-notes" class="form-control" rows="2" placeholder="特記事項など…"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">農薬記録</div>
+      <div id="pest-list"></div>
+      <button class="btn-add" onclick="addPesticideRow()">＋ 農薬を追加</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">肥料記録</div>
+      <div id="fert-list"></div>
+      <button class="btn-add" onclick="addFertilizerRow()">＋ 肥料を追加</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">写真</div>
+      <input type="file" id="photo-input" accept="image/*" multiple style="display:none"
+             onchange="handlePhotos(event)">
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('photo-input').click()">
+        📷 写真を選択
+      </button>
+      <div class="photo-grid" id="photo-grid"></div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <button class="btn btn-primary" onclick="saveReport()">💾 日報を保存</button>
+    </div>
+
+  </section>
+
+  <!-- ======== TAB: カレンダー ======== -->
+  <section id="sec-calendar" class="section">
+
+    <div class="cal-nav">
+      <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+      <h2 id="cal-title"></h2>
+      <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="cal-grid">
+      <div class="cal-head">
+        <span>日</span><span>月</span><span>火</span><span>水</span>
+        <span>木</span><span>金</span><span>土</span>
+      </div>
+      <div class="cal-body" id="cal-body"></div>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <div class="filter-bar" id="cal-filter"></div>
+      <div id="cal-report-list"></div>
+    </div>
+
+  </section>
+
+  <!-- ======== TAB: 圃場管理 ======== -->
+  <section id="sec-fields" class="section">
+
+    <div class="card">
+      <div class="card-title" id="field-form-title">圃場を追加</div>
+      <div class="form-group">
+        <label class="form-label">圃場名 <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="f-name" class="form-control" placeholder="例: 第一圃場・北田">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">面積 (a)</label>
+          <input type="number" id="f-area" class="form-control" placeholder="例: 10" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">栽培品目</label>
+          <input type="text" id="f-crop" class="form-control" placeholder="例: 水稲">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">備考（場所・特徴など）</label>
+        <input type="text" id="f-notes" class="form-control" placeholder="例: 用水路沿い">
+      </div>
+      <input type="hidden" id="f-edit-id">
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveField()">保存</button>
+        <button class="btn btn-secondary btn-sm" id="f-cancel" style="display:none;"
+                onclick="cancelFieldEdit()">キャンセル</button>
+      </div>
+    </div>
+
+    <h3 class="sec-title">登録済み圃場</h3>
+    <div id="field-list"></div>
+
+  </section>
+
+  <!-- ======== TAB: 農薬履歴 ======== -->
+  <section id="sec-pesticides" class="section">
+
+    <div class="filter-bar" id="pest-filter"></div>
+
+    <div class="date-range-bar">
+      <input type="date" id="pest-from" class="form-control" title="馋始日">
+      <span>〜</span>
+      <input type="date" id="pest-to" class="form-control" title="終了日">
+      <button class="btn btn-secondary btn-sm" onclick="renderPestHistory()">絞込</button>
+    </div>
+
+    <div id="pest-history"></div>
+
+  </section>
+
+  <!-- ======== TAB: エクスポート ======== -->
+  <section id="sec-export" class="section">
+
+    <h3 class="sec-title">CSVエクスポート</h3>
+
+    <div class="export-card">
+      <div class="export-icon">📋</div>
+      <div class="export-info">
+        <div class="export-title">日報一覧 CSV</div>
+        <div class="export-desc">日付・圃場・作業内容・時間・天気</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="exportReports()">DL</button>
+    </div>
+
+    <div class="export-card">
+      <div class="export-icon">🧪</div>
+      <div class="export-info">
+        <div class="export-title">農薬使用履歴 CSV</div>
+        <div class="export-desc">農薬名・希釈倍率・散布量・使用目的</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="exportPesticides()">DL</button>
+    </div>
+
+    <div class="export-card">
+      <div class="export-icon">🌱</div>
+      <div class="export-info">
+        <div class="export-title">肥料使用履歴 CSV</div>
+        <div class="export-desc">肥料名・使用量・単位（施肥記録帳）</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="exportFertilizers()">DL</button>
+    </div>
+
+    <div class="notice">
+      ⚠️ エクスポートCSVはUTF-8 BOM付きです。Excelやスプレッドシートで文字化けせずに開けます。
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ==================== BOTTOM NAV ==================== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-tab="record" onclick="switchTab('record',this)">
+    <span class="nav-icon">✏️</span><span>記録</span>
+  </button>
+  <button class="nav-item" data-tab="calendar" onclick="switchTab('calendar',this)">
+    <span class="nav-icon">📅</span><span>カレンダー</span>
+  </button>
+  <button class="nav-item" data-tab="fields" onclick="switchTab('fields',this)">
+    <span class="nav-icon">🌾</span><span>圃場</span>
+  </button>
+  <button class="nav-item" data-tab="pesticides" onclick="switchTab('pesticides',this)">
+    <span class="nav-icon">🧪</span><span>農薬履歴</span>
+  </button>
+  <button class="nav-item" data-tab="export" onclick="switchTab('export',this)">
+    <span class="nav-icon">🍊</span><span>出力</span>
+  </button>
+</nav>
+
+<!-- ==================== MODAL ==================== -->
+<div class="modal-overlay" id="modal" onclick="onModalOverlayClick(event)">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<!-- ==================== TOAST ==================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+/* ============================================================
+   IndexedDB Layer
+   ============================================================ */
+const DB_NAME    = 'agri-diary';
+const DB_VERSION = 1;
+let   db;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => { db = req.result; resolve(db); };
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('fields')) {
+        const fs = d.createObjectStore('fields', { keyPath: 'id', autoIncrement: true });
+        fs.createIndex('name', 'name');
+      }
+      if (!d.objectStoreNames.contains('reports')) {
+        const rs = d.createObjectStore('reports', { keyPath: 'id', autoIncrement: true });
+        rs.createIndex('date',    'date');
+        rs.createIndex('fieldId', 'fieldId');
+      }
+    };
+  });
+}
+
+const tx = (store, mode = 'readonly') => db.transaction(store, mode).objectStore(store);
+
+function dbGetAll(store) {
+  return new Promise((res, rej) => {
+    const req = tx(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((res, rej) => {
+    const req = tx(store).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbAdd(store, data) {
+  return new Promise((res, rej) => {
+    const req = tx(store, 'readwrite').add(data);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbPut(store, data) {
+  return new Promise((res, rej) => {
+    const req = tx(store, 'readwrite').put(data);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbDelete(store, key) {
+  return new Promise((res, rej) => {
+    const req = tx(store, 'readwrite').delete(key);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+/* ============================================================
+   App State
+   ============================================================ */
+let calYear   = new Date().getFullYear();
+let calMonth  = new Date().getMonth();
+let calFilter = 'all';
+let pestFilter= 'all';
+let photos    = [];          // base64 array for current record
+let pestCount = 0;
+let fertCount = 0;
+
+/* ============================================================
+   Utility
+   ============================================================ */
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function fmtDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-');
+  const dow = ['日','月','火','水','木','金','土'][new Date(+y,+m-1,+d).getDay()];
+  return `${y}�T${+m}月${+d}日（${dow}）`;
+}
+
+function fmtShort(s) {
+  if (!s) return '';
+  const [, m, d] = s.split('-');
+  return `${+m}/${+d}`;
+}
+
+function toast(msg, ms = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), ms);
+}
+
+function esc(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================================================
+   Tab Switching
+   ============================================================ */
+function switchTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  btn.classList.add('active');
+
+  if (tab === 'calendar')   renderCalendar();
+  if (tab === 'fields')     renderFieldList();
+  if (tab === 'pesticides') renderPestFilters().then(renderPestHistory);
+  if (tab === 'record')     loadFieldsSelect();
+}
+
+/* ============================================================
+   Field Management
+   ============================================================ */
+async function loadFieldsSelect() {
+  const fields = await dbGetAll('fields');
+  const sel = document.getElementById('r-field');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 圃場を選択 --</option>';
+  fields.forEach(f => {
+    const o = document.createElement('option');
+    o.value = f.id;
+    o.textContent = f.name + (f.crop ? ` (${f.crop})` : '');
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+async function saveField() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('⚠️ 圃場名を入力してください'); return; }
+
+  const editId = document.getElementById('f-edit-id').value;
+  const data = {
+    name,
+    area:  parseFloat(document.getElementById('f-area').value)  || 0,
+    crop:  document.getElementById('f-crop').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+
+  if (editId) {
+    data.id = parseInt(editId);
+    await dbPut('fields', data);
+    toast('✅ 圃場を更新しました');
+  } else {
+    await dbAdd('fields', data);
+    toast('✅ 圃場を追加しました');
+  }
+  clearFieldForm();
+  renderFieldList();
+}
+
+function clearFieldForm() {
+  ['f-name','f-area','f-crop','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-edit-id').value = '';
+  document.getElementById('field-form-title').textContent = '圃場を追加';
+  document.getElementById('f-cancel').style.display = 'none';
+}
+
+function cancelFieldEdit() { clearFieldForm(); }
+
+async function editField(id) {
+  const f = await dbGet('fields', id);
+  if (!f) return;
+  document.getElementById('f-name').value  = f.name;
+  document.getElementById('f-area').value  = f.area  || '';
+  document.getElementById('f-crop').value  = f.crop  || '';
+  document.getElementById('f-notes').value = f.notes || '';
+  document.getElementById('f-edit-id').value = id;
+  document.getElementById('field-form-title').textContent = '圃場を編集';
+  document.getElementById('f-cancel').style.display = 'inline-flex';
+  document.querySelector('#sec-fields .card').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function deleteField(id) {
+  if (!confirm('この圃場を削除しますか？')) return;
+  await dbDelete('fields', id);
+  toast('🗑️ 削除しました');
+  renderFieldList();
+}
+
+async function renderFieldList() {
+  const fields = await dbGetAll('fields');
+  const el = document.getElementById('field-list');
+  if (!fields.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🌾</div><p>圃場が登録されていません<br>上のフォームから追加してください</p></div>`;
+    return;
+  }
+  el.innerHTML = fields.map(f => `
+    <div class="field-item">
+      <div class="field-icon">🌾</div>
+      <div class="field-info">
+        <div class="field-name">${esc(f.name)}</div>
+        <div class="field-detail">${[f.crop, f.area ? f.area+'a' : '', f.notes].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="field-actions">
+        <button class="btn btn-secondary btn-sm" onclick="editField(${f.id})">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteField(${f.id})">削除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   Record — Pesticide / Fertilizer Rows
+   ============================================================ */
+function addPesticideRow() {
+  const idx = pestCount++;
+  const div = document.createElement('div');
+  div.className = 'list-item';
+  div.innerHTML = `
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+    <div class="form-group">
+      <label class="form-label">農薬名</label>
+      <input type="text" class="form-control pn" placeholder="例: ○○乳剤">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">希釈倍率</label>
+        <input type="text" class="form-control pd" placeholder="例: 1000倍">
+      </div>
+      <div class="form-group">
+        <label class="form-label">散布量</label>
+        <div style="display:flex;gap:5px;">
+          <input type="number" class="form-control pa" placeholder="100" style="flex:2;min-width:0;">
+          <select class="form-control pu" style="flex:1;min-width:0;">
+            <option>L</option><option>mL</option><option>kg</option><option>g</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">使用目的</label>
+      <input type="text" class="form-control pp" placeholder="例: 病害虫防除">
+    </div>`;
+  document.getElementById('pest-list').appendChild(div);
+}
+
+function addFertilizerRow() {
+  const div = document.createElement('div');
+  div.className = 'list-item';
+  div.innerHTML = `
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+    <div class="form-group">
+      <label class="form-label">肥料名</label>
+      <input type="text" class="form-control fn" placeholder="例: 化成肥料8-8-8">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">使用量</label>
+        <input type="number" class="form-control fa" placeholder="50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">単位</label>
+        <select class="form-control fu">
+          <option>kg</option><option>g</option><option>袋</option><option>L</option>
+        </select>
+      </div>
+    </div>`;
+  document.getElementById('fert-list').appendChild(div);
+}
+
+function collectPesticides() {
+  return Array.from(document.querySelectorAll('#pest-list .list-item'))
+    .map(el => ({
+      name:     el.querySelector('.pn').value.trim(),
+      dilution: el.querySelector('.pd').value.trim(),
+      amount:   parseFloat(el.querySelector('.pa').value) || 0,
+      unit:     el.querySelector('.pu').value,
+      purpose:  el.querySelector('.pp').value.trim()
+    }))
+    .filter(p => p.name);
+}
+
+function collectFertilizers() {
+  return Array.from(document.querySelectorAll('#fert-list .list-item'))
+    .map(el => ({
+      name:   el.querySelector('.fn').value.trim(),
+      amount: parseFloat(el.querySelector('.fa').value) || 0,
+      unit:   el.querySelector('.fu').value
+    }))
+    .filter(f => f.name);
+}
+
+/* ============================================================
+   Record — Photos
+   ============================================================ */
+async function handlePhotos(e) {
+  for (const file of e.target.files) {
+    const compressed = await compressImage(file, 1200, 0.75);
+    photos.push(compressed);
+  }
+  renderPhotoGrid();
+  e.target.value = '';
+}
+
+function compressImage(file, maxPx, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width: w, height: h } = img;
+      if (w > maxPx || h > maxPx) {
+        if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else       { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = url;
+  });
+}
+
+function renderPhotoGrid() {
+  document.getElementById('photo-grid').innerHTML = photos.map((p, i) => `
+    <div class="photo-thumb">
+      <img src="${p}" alt="写真${i+1}" onclick="viewPhoto('${p}')">
+      <button class="photo-rm" onclick="removePhoto(${i})">×</button>
+    </div>`).join('');
+}
+
+function removePhoto(i) {
+  photos.splice(i, 1);
+  renderPhotoGrid();
+}
+
+/* ============================================================
+   Record — Save / Clear
+   ============================================================ */
+async function saveReport() {
+  const date    = document.getElementById('r-date').value;
+  const fieldId = parseInt(document.getElementById('r-field').value);
+
+  if (!date)    { toast('⚠️ 日付を入力してください'); return; }
+  if (!fieldId) { toast('⚠️ 圃場を選択してください'); return; }
+
+  const fields = await dbGetAll('fields');
+  const field  = fields.find(f => f.id === fieldId);
+
+  const report = {
+    date,
+    fieldId,
+    fieldName:   field ? field.name : '',
+    weather:     document.getElementById('r-weather').value,
+    temperature: parseFloat(document.getElementById('r-temp').value)  || null,
+    workContent: document.getElementById('r-work').value.trim(),
+    workHours:   parseFloat(document.getElementById('r-hours').value) || 0,
+    worker:      document.getElementById('r-worker').value.trim(),
+    notes:       document.getElementById('r-notes').value.trim(),
+    pesticides:  collectPesticides(),
+    fertilizers: collectFertilizers(),
+    photos:      photos.slice(),
+    createdAt:   new Date().toISOString()
+  };
+
+  await dbAdd('reports', report);
+  toast('✅ 日報を保存しました');
+  clearRecordForm();
+}
+
+function clearRecordForm() {
+  document.getElementById('r-date').value    = today();
+  document.getElementById('r-field').value   = '';
+  document.getElementById('r-weather').value = '晴れ';
+  document.getElementById('r-temp').value    = '';
+  document.getElementById('r-work').value    = '';
+  document.getElementById('r-hours').value   = '';
+  document.getElementById('r-worker').value  = '';
+  document.getElementById('r-notes').value   = '';
+  document.getElementById('pest-list').innerHTML = '';
+  document.getElementById('fert-list').innerHTML = '';
+  photos = [];
+  renderPhotoGrid();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================================
+   Calendar
+   ============================================================ */
+async function renderCalendar() {
+  document.getElementById('cal-title').textContent =
+    `${calYear}年${calMonth + 1}月`;
+
+  const reports = await dbGetAll('reports');
+  const map = {};
+  reports.forEach(r => {
+    if (!map[r.date]) map[r.date] = { count: 0, hasPest: false };
+    map[r.date].count++;
+    if (r.pesticides && r.pesticides.length) map[r.date].hasPest = true;
+  });
+
+  const first   = new Date(calYear, calMonth, 1);
+  const last    = new Date(calYear, calMonth + 1, 0);
+  const todayStr = today();
+  let html = '';
+
+  // pad start
+  for (let i = 0; i < first.getDay(); i++) {
+    const d = new Date(calYear, calMonth, -first.getDay() + i + 1);
+    html += `<div class="cal-day other-month"><span class="day-num">${d.getDate()}</span></div>`;
+  }
+
+  for (let d = 1; d <= last.getDate(); d++) {
+    const ds  = `${calYear}-${pad(calMonth+1)}-${pad(d)}`;
+    const dow = new Date(calYear, calMonth, d).getDay();
+    let cls   = 'cal-day';
+    if (ds === todayStr) cls += ' today';
+    if (dow === 0) cls += ' sunday';
+    if (dow === 6) cls += ' saturday';
+
+    const info = map[ds];
+    let dots = '';
+    if (info) {
+      const dotClass = info.hasPest ? 'day-dot has-pest' : 'day-dot';
+      const n = Math.min(info.count, 3);
+      dots = `<div class="day-dots">${Array(n).fill(`<div class="${dotClass}"></div>`).join('')}</div>`;
+    }
+
+    html += `<div class="${cls}" onclick="onDayClick('${ds}')">
+      <span class="day-num">${d}</span>${dots}
+    </div>`;
+  }
+
+  // pad end
+  const total = Math.ceil((first.getDay() + last.getDate()) / 7) * 7;
+  for (let i = 1; i <= total - first.getDay() - last.getDate(); i++) {
+    html += `<div class="cal-day other-month"><span class="day-num">${i}</span></div>`;
+  }
+
+  document.getElementById('cal-body').innerHTML = html;
+  await renderCalFilterChips();
+  await renderCalReportList();
+}
+
+async function renderCalFilterChips() {
+  const fields = await dbGetAll('fields');
+  let html = `<button class="chip ${calFilter==='all'?'active':''}" onclick="setCalFilter('all',this)">すべて</button>`;
+  fields.forEach(f => {
+    html += `<button class="chip ${String(calFilter)===String(f.id)?'active':''}"
+              onclick="setCalFilter(${f.id},this)">${esc(f.name)}</button>`;
+  });
+  document.getElementById('cal-filter').innerHTML = html;
+}
+
+async function setCalFilter(id, el) {
+  calFilter = id;
+  document.querySelectorAll('#cal-filter .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  await renderCalReportList();
+}
+
+async function renderCalReportList() {
+  let reports = await dbGetAll('reports');
+  const prefix = `${calYear}-${pad(calMonth+1)}`;
+  reports = reports.filter(r => r.date.startsWith(prefix));
+  if (calFilter !== 'all') reports = reports.filter(r => String(r.fieldId) === String(calFilter));
+  reports.sort((a, b) => b.date.localeCompare(a.date));
+
+  const el = document.getElementById('cal-report-list');
+  if (!reports.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><p>この月の日報はありませこ</p></div>`;
+    return;
+  }
+
+  el.innerHTML = reports.map(r => `
+    <div class="report-item" onclick="showReportDetail(${r.id})">
+      <div class="report-date">${fmtDate(r.date)}${r.weather ? '　' + r.weather : ''}${r.workHours ? '　⏱️ ' + r.workHours + 'h' : ''}</div>
+      <div class="report-field">🌾 ${esc(r.fieldName)}</div>
+      <div class="report-work">${esc(r.workContent) || '（作業内容なし）'}</div>
+      ${r.pesticides && r.pesticides.length
+        ? `<div style="margin-top:6px"><span class="badge badge-orange">🧪 農薬 ${r.pesticides.length}件</span></div>`
+        : ''}
+      ${r.photos && r.photos.length
+        ? `<div style="margin-top:4px"><span class="badge badge-blue">📷 ${r.photos.length}枚</span></div>`
+        : ''}
+    </div>`).join('');
+}
+
+async function onDayClick(ds) {
+  let reports = await dbGetAll('reports');
+  reports = reports.filter(r => r.date === ds);
+
+  if (!reports.length) {
+    openModal(`
+      <div class="modal-head">
+        <span class="modal-title">${fmtDate(ds)}</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="empty" style="padding:24px 0 12px">
+        <div class="empty-icon">📝</div><p>この日の日報はありませこ</p>
+      </div>
+      <button class="btn btn-primary" onclick="goCreateRecord('${ds}')">この日の日報を作成</button>`);
+    return;
+  }
+
+  if (reports.length === 1) { showReportDetail(reports[0].id); return; }
+
+  openModal(`
+    <div class="modal-head">
+      <span class="modal-title">${fmtDate(ds)}</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    ${reports.map(r => `
+      <div class="report-item" onclick="showReportDetail(${r.id})">
+        <div class="report-field">🌾 ${esc(r.fieldName)}</div>
+        <div class="report-work">${esc(r.workContent) || '（作業内容なし）'}</div>
+      </div>`).join('')}`);
+}
+
+async function showReportDetail(id) {
+  const r = await dbGet('reports', id);
+  if (!r) return;
+
+  const pestsHtml = r.pesticides && r.pesticides.length ? `
+    <div class="detail-block">
+      <div class="detail-label">🧪 農薬記録</div>
+      ${r.pesticides.map(p => `
+        <div class="list-item" style="margin-bottom:7px;">
+          <strong>${esc(p.name)}</strong><br>
+          <small style="color:var(--muted)">
+            希釈: ${esc(p.dilution)||'−'} ／ 散布量: ${p.amount}${p.unit}
+            ${p.purpose ? '／ ' + esc(p.purpose) : ''}
+          </small>
+        </div>`).join('')}
+    </div>` : '';
+
+  const fertsHtml = r.fertilizers && r.fertilizers.length ? `
+    <div class="detail-block">
+      <div class="detail-label">🌱 肥料記録</div>
+      ${r.fertilizers.map(f => `
+        <div class="list-item" style="margin-bottom:7px;">
+          <strong>${esc(f.name)}</strong>　${f.amount}${f.unit}
+        </div>`).join('')}
+    </div>` : '';
+
+  const photosHtml = r.photos && r.photos.length ? `
+    <div class="detail-block">
+      <div class="detail-label">📷 写真（${r.photos.length}枚）</div>
+      <div class="photo-grid">
+        ${r.photos.map((p,i) => `
+          <div class="photo-thumb" onclick="viewPhoto('${p}')">
+            <img src="${p}" alt="写真${i+1}">
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  openModal(`
+    <div class="modal-head">
+      <span class="modal-title">${fmtDate(r.date)}</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="meta-row">
+      <span class="badge badge-green">🌾 ${esc(r.fieldName)}</span>
+      ${r.weather ? `<span class="badge badge-green">${esc(r.weather)}</span>` : ''}
+      ${r.temperature != null ? `<span class="badge badge-green">${r.temperature}℃</span>` : ''}
+      ${r.workHours   ? `<span class="badge badge-green">⏱️ ${r.workHours}h</span>` : ''}
+      ${r.worker      ? `<span class="badge badge-blue">👤 ${esc(r.worker)}</span>` : ''}
+    </div>
+
+    ${r.workContent ? `
+      <div class="detail-block">
+        <div class="detail-label">作業内容</div>
+        <div class="detail-value">${esc(r.workContent).replace(/\n/g,'<br>')}</div>
+      </div>` : ''}
+
+    ${r.notes ? `
+      <div class="detail-block">
+        <div class="detail-label">備考</div>
+        <div class="detail-value">${esc(r.notes).replace(/\n/g,'<br>')}</div>
+      </div>` : ''}
+
+    ${pestsHtml}
+    ${fertsHtml}
+    ${photosHtml}
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-danger" style="flex:1;" onclick="deleteReport(${r.id})">🗑️ 削除</button>
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeModal()">閉じる</button>
+    </div>`);
+}
+
+async function deleteReport(id) {
+  if (!confirm('この日報を削除しますか？')) return;
+  await dbDelete('reports', id);
+  closeModal();
+  toast('🗑️ 日報を削除しました');
+  if (document.getElementById('sec-calendar').classList.contains('active')) renderCalendar();
+}
+
+function viewPhoto(src) {
+  openModal(`
+    <div style="text-align:center;">
+      <img src="${src}" style="max-width:100%;border-radius:10px;display:block;margin:0 auto;">
+      <button class="btn btn-secondary" style="margin-top:12px;width:100%;" onclick="closeModal()">閉じる</button>
+    </div>`);
+}
+
+function goCreateRecord(ds) {
+  closeModal();
+  switchTab('record', document.querySelector('[data-tab="record"]'));
+  document.getElementById('r-date').value = ds;
+}
+
+function changeMonth(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0;  calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+/* ============================================================
+   Pesticide History
+   ============================================================ */
+async function renderPestFilters() {
+  const fields = await dbGetAll('fields');
+  let html = `<button class="chip ${pestFilter==='all'?'active':''}" onclick="setPestFilter('all',this)">すべて</button>`;
+  fields.forEach(f => {
+    html += `<button class="chip ${String(pestFilter)===String(f.id)?'active':''}"
+              onclick="setPestFilter(${f.id},this)">${esc(f.name)}</button>`;
+  });
+  document.getElementById('pest-filter').innerHTML = html;
+}
+
+async function setPestFilter(id, el) {
+  pestFilter = id;
+  document.querySelectorAll('#pest-filter .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderPestHistory();
+}
+
+async function renderPestHistory() {
+  let reports = await dbGetAll('reports');
+
+  const from = document.getElementById('pest-from').value;
+  const to   = document.getElementById('pest-to').value;
+  if (from) reports = reports.filter(r => r.date >= from);
+  if (to)   reports = reports.filter(r => r.date <= to);
+  if (pestFilter !== 'all') reports = reports.filter(r => String(r.fieldId) === String(pestFilter));
+
+  const rows = [];
+  reports.forEach(r => {
+    (r.pesticides || []).forEach(p => {
+      rows.push({ date: r.date, field: r.fieldName, ...p });
+    });
+  });
+  rows.sort((a, b) => b.date.localeCompare(a.date));
+
+  const el = document.getElementById('pest-history');
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🧪</div><p>農薬使用記録がありません</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>日付</th><th>圃場</th><th>農薬名</th>
+            <th>希釈</th><th>散布量</th><th>目的</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(p => `
+            <tr>
+              <td>${fmtShort(p.date)}</td>
+              <td>${esc(p.field)}</td>
+              <td><strong>${esc(p.name)}</strong></td>
+              <td>${esc(p.dilution)||'−'}</td>
+              <td>${p.amount}${p.unit}</td>
+              <td>${esc(p.purpose)||'−'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+/* ============================================================
+   CSV Export
+   ============================================================ */
+function downloadCSV(filename, rows) {
+  const BOM = '\uFEFF';
+  const csv = BOM + rows.map(r =>
+    r.map(v => (String(v).includes(',') || String(v).includes('"') || String(v).includes('\n'))
+      ? `"${String(v).replace(/"/g, '""')}"` : String(v))
+    .join(',')
+  ).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`✅ ${filename} をダウンロードしました`);
+}
+
+async function exportReports() {
+  const reports = await dbGetAll('reports');
+  reports.sort((a, b) => a.date.localeCompare(b.date));
+  const hd = ['日付','圃場','作業者','天気','気温(℃)','作業内容','作業時間(h)','農薬件数','肥料件数','写真枚数','備考'];
+  const rows = reports.map(r => [
+    r.date, r.fieldName, r.worker||'', r.weather||'',
+    r.temperature??'', r.workContent||'', r.workHours||0,
+    (r.pesticides||[]).length, (r.fertilizers||[]).length,
+    (r.photos||[]).length, r.notes||''
+  ]);
+  downloadCSV('日報一覧.csv', [hd, ...rows]);
+}
+
+async function exportPesticides() {
+  const reports = await dbGetAll('reports');
+  reports.sort((a, b) => a.date.localeCompare(b.date));
+  const hd = ['日付','圃場','農薬名','希釈倍率','散布量','単位','使用目的'];
+  const rows = [];
+  reports.forEach(r => (r.pesticides||[]).forEach(p =>
+    rows.push([r.date, r.fieldName, p.name, p.dilution||'', p.amount, p.unit, p.purpose||''])
+  ));
+  if (!rows.length) { toast('⚠️ 農薬記録がありません'); return; }
+  downloadCSV('農薬使用履歴.csv', [hd, ...rows]);
+}
+
+async function exportFertilizers() {
+  const reports = await dbGetAll('reports');
+  reports.sort((a, b) => a.date.localeCompare(b.date));
+  const hd = ['日付','圃場','肥料名','使用量','単位'];
+  const rows = [];
+  reports.forEach(r => (r.fertilizers||[]).forEach(f =>
+    rows.push([r.date, r.fieldName, f.name, f.amount, f.unit])
+  ));
+  if (!rows.length) { toast('⚠️ 肥料記録がありません'); return; }
+  downloadCSV('肥料使用履歴.csv', [hd, ...rows]);
+}
+
+/* ============================================================
+   Modal
+   ============================================================ */
+function openModal(html) {
+  document.getElementById('modal-box').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function onModalOverlayClick(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+/* ============================================================
+   App Init
+   ============================================================ */
+async function init() {
+  await openDB();
+
+  document.getElementById('r-date').value = today();
+
+  await loadFieldsSelect();
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.warn('SW registration failed:', err));
+  }
+}
+
+init();
+</script>
+</body>
+</html>
